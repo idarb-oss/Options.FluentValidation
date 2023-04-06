@@ -52,22 +52,30 @@ public class OptionValidation
     [Fact]
     public void Option_Validation_Should_Be_Skipped()
     {
-        IServiceCollection services = new ServiceCollection();
-        
-        services.AddTransient<IValidator<TestOption>, TestOptionsValidation>();
-        services.AddOptions<TestOption>(name: "Test")
-            .Configure(o => o.Name = "Test")
-            .ValidateFluently();
+         var validator = new TestOptionsValidation();
+        var optionValidator = new FluentValidationOptions<TestOption>("Data", validator);
 
-        var provider = services.BuildServiceProvider();
+        var option = new TestOption{ Name = "Test" };
 
-        var options = provider.GetRequiredService<IOptions<TestOption>>().Value;
-
-        options.Name.Should().Be("");
+        var result = optionValidator.Validate("Test", option);
+        result.Should().Be(ValidateOptionsResult.Skip);
     }
 
     [Fact]
-    public void Option_Validation_Should_Be_Skipped_When_Name_Is_Null()
+    public void Option_Validation_Should_Be_Skipped_When_Name_Is_Not_Equal()
+    {
+
+        var validator = new TestOptionsValidation();
+        var optionValidator = new FluentValidationOptions<TestOption>("Data", validator);
+
+        var option = new TestOption{ Name = "Test" };
+
+        var result = optionValidator.Validate("Test", option);
+        result.Should().Be(ValidateOptionsResult.Skip);
+    }
+
+    [Fact]
+    public void Option_Validation_Should_Be_Success_When_Name_Is_Null()
     {
 
         var validator = new TestOptionsValidation();
@@ -75,7 +83,7 @@ public class OptionValidation
 
         var option = new TestOption{ Name = "Test" };
 
-        var result = optionValidator.Validate("", option);
+        var result = optionValidator.Validate("Test", option);
         result.Should().Be(ValidateOptionsResult.Success);
     }
 
