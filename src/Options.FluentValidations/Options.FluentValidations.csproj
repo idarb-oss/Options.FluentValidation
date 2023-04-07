@@ -12,7 +12,7 @@
 
     <Authors>Idar Bergli</Authors>
     <Description>For using FluentValidations to validate your Options bindings.</Description>
-    <PackageTags></PackageTags>
+    <PackageTags>FluentValidation;Options</PackageTags>
     <Authors>Idar Bergli</Authors>
     <RepositoryUrl>https://github.com/idarb-oss/Options.FluentValidations</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
