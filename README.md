@@ -42,6 +42,9 @@
       <ul>
         <li><a href="#built-with">Built With</a></li>
       </ul>
+      <ul>
+        <li><a href="#how-to-use">How to use</a></li>
+      </ul>
     </li>
     <li><a href="#license">License</a></li>
   </ol>
@@ -54,9 +57,9 @@
 
 Options.FluentValidation adds extension methods on top of Microsoft.Extensions.Options to be able to use FluentValidation for validating your options.
 
-```c#
+```csharp
 services.AddOptions<TestOption>()
-    .Bind(c => c.GetSection("Options"))
+    .Bind(config.GetSection("Options"))
     .ValidateFluently();
 ```
 
@@ -72,35 +75,86 @@ services.AddOptions<TestOption>()
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 
+### How to use
+
+Start by creation your option record:
+
+```csharp
+namespace Options;
+
+public record AppOptions
+{
+    public const string SectionName = "App";
+
+    public string Name { get; init; }
+
+    public int WorkerCount { get; init; }
+}
+```
+
+Create an FluentValidation class:
+
+```csharp
+using FluentValidation;
+
+namespace Options;
+
+public class AppOptionsValidation : AbstractValidator<AppOptions>
+{
+    public AppOptionsValidation()
+    {
+        RuleFor(o => o.Name)
+            .NotEmpty()
+            .NotNull();
+
+        RuleFor(o => o.WorkerCount)
+            .GreaterThan(0)
+            .LessThan(20);
+    }
+}
+```
+
+Then add the option to your `IServiceCollection` by following:
+
+```csharp
+using Options.FluentValidation;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace Options;
+
+public static class ServiceCollectionExtensions
+{
+    public static IServiceCollection AddOptions(this IServiceCollection services, IConfiguration config)
+    {
+        services.AddOptions<AppOptions>()
+            .Bind(config.GetRequiredSection(AppOptions.SectionName))
+            .ValidateFluently()
+            .ValidateOnStart();  // Add Microsoft.Extensions.Hosting package
+
+        return services;
+    }
+}
+```
+
+Then you can add the configuration to your `json` file or any other means of setting up your configurations.
+
+```json
+{
+    "App": {
+        "Name": "My fancy app",
+        "WorkerCount": 15
+    }
+}
+```
+
+
 <!-- LICENSE -->
 ## License
 
 Distributed under the MIT License. See `LICENSE` for more information.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
-
-
-
-<!-- CONTACT
-## Contact
-
-Your Name - [@twitter_handle](https://twitter.com/twitter_handle) - email@email_client.com
-
-Project Link: [https://github.com/idarb-oss/Options.FluentValidation](https://github.com/idarb-oss/Options.FluentValidation)
-
-<p align="right">(<a href="#top">back to top</a>)</p>
--->
-
-
-<!-- ACKNOWLEDGMENTS
-## Acknowledgments
-
-* []()
-* []()
-* []()
-
-<p align="right">(<a href="#top">back to top</a>)</p>
--->
 
 
 <!-- MARKDOWN LINKS & IMAGES -->

@@ -15,18 +15,28 @@ public static class OptionBuilderFluentValidationExtensions
     /// <typeparam name="TOptions">Option type to validate</typeparam>
     /// <param name="optionsBuilder">The OptionBuilder the validation should be performed on.</param>
     /// <returns><see cref="OptionsBuilder{TOptions}"/></returns>
-    public static OptionsBuilder<TOptions> ValidateFluently<TOptions>(this OptionsBuilder<TOptions> optionsBuilder) where TOptions : class
+    public static OptionsBuilder<TOptions> ValidateFluently<TOptions>(
+        this OptionsBuilder<TOptions> optionsBuilder
+    )
+        where TOptions : class
     {
-        optionsBuilder.Services.AddSingleton<IValidateOptions<TOptions>>(s => new FluentValidationOptions<TOptions>(optionsBuilder.Name, s.GetRequiredService<IValidator<TOptions>>()));
+        optionsBuilder.Services.AddSingleton<IValidateOptions<TOptions>>(
+            s =>
+                new FluentValidationOptions<TOptions>(
+                    optionsBuilder.Name,
+                    s.GetRequiredService<IValidator<TOptions>>()
+                )
+        );
         return optionsBuilder;
     }
 }
 
 /// <inheritdoc cref="IValidateOptions{TOptions}"/>
-public class FluentValidationOptions<TOptions> : IValidateOptions<TOptions> where TOptions : class
+public class FluentValidationOptions<TOptions> : IValidateOptions<TOptions>
+    where TOptions : class
 {
     private readonly IValidator<TOptions> _validator;
-    
+
     /// <summary>
     /// Creates an new FluentValidationOptions to run validations with.
     /// </summary>
@@ -57,8 +67,9 @@ public class FluentValidationOptions<TOptions> : IValidateOptions<TOptions> wher
         if (validationResult.IsValid)
             return ValidateOptionsResult.Success;
 
-        var errors = validationResult.Errors.Select(x =>
-            $"Options validation failed for {x.PropertyName} with error: {x.ErrorMessage}");
+        var errors = validationResult.Errors.Select(
+            x => $"Options validation failed for {x.PropertyName} with error: {x.ErrorMessage}"
+        );
 
         return ValidateOptionsResult.Fail(errors);
     }

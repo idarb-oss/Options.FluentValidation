@@ -15,20 +15,15 @@ public record TestOption
     public int Number { get; set; } = 0;
 }
 
-
 public class TestOptionsValidation : AbstractValidator<TestOption>
 {
     public TestOptionsValidation()
     {
-        RuleFor(x => x.Name)
-            .NotEmpty()
-            .NotNull();
+        RuleFor(x => x.Name).NotEmpty().NotNull();
 
-        RuleFor(x => x.Number)
-            .LessThan(1);
+        RuleFor(x => x.Number).LessThan(1);
     }
 }
-
 
 public class OptionValidation
 {
@@ -36,11 +31,9 @@ public class OptionValidation
     public void Options_Should_Be_Test()
     {
         IServiceCollection services = new ServiceCollection();
-        
+
         services.AddTransient<IValidator<TestOption>, TestOptionsValidation>();
-        services.AddOptions<TestOption>()
-            .Configure(o => o.Name = "Test")
-            .ValidateFluently();
+        services.AddOptions<TestOption>().Configure(o => o.Name = "Test").ValidateFluently();
 
         var provider = services.BuildServiceProvider();
 
@@ -52,10 +45,10 @@ public class OptionValidation
     [Fact]
     public void Option_Validation_Should_Be_Skipped()
     {
-         var validator = new TestOptionsValidation();
+        var validator = new TestOptionsValidation();
         var optionValidator = new FluentValidationOptions<TestOption>("Data", validator);
 
-        var option = new TestOption{ Name = "Test" };
+        var option = new TestOption { Name = "Test" };
 
         var result = optionValidator.Validate("Test", option);
         result.Should().Be(ValidateOptionsResult.Skip);
@@ -64,11 +57,10 @@ public class OptionValidation
     [Fact]
     public void Option_Validation_Should_Be_Skipped_When_Name_Is_Not_Equal()
     {
-
         var validator = new TestOptionsValidation();
         var optionValidator = new FluentValidationOptions<TestOption>("Data", validator);
 
-        var option = new TestOption{ Name = "Test" };
+        var option = new TestOption { Name = "Test" };
 
         var result = optionValidator.Validate("Test", option);
         result.Should().Be(ValidateOptionsResult.Skip);
@@ -77,11 +69,10 @@ public class OptionValidation
     [Fact]
     public void Option_Validation_Should_Be_Success_When_Name_Is_Null()
     {
-
         var validator = new TestOptionsValidation();
         var optionValidator = new FluentValidationOptions<TestOption>(null, validator);
 
-        var option = new TestOption{ Name = "Test" };
+        var option = new TestOption { Name = "Test" };
 
         var result = optionValidator.Validate("Test", option);
         result.Should().Be(ValidateOptionsResult.Success);
@@ -90,24 +81,25 @@ public class OptionValidation
     [Fact]
     public void Option_Validation_Option_Null_Should_Throw()
     {
-
         var validator = new TestOptionsValidation();
         var optionValidator = new FluentValidationOptions<TestOption>("", validator);
 
-        optionValidator.Invoking(o => o.Validate("", null))
-            .Should().Throw<ArgumentNullException>()
+        optionValidator
+            .Invoking(o => o.Validate("", null))
+            .Should()
+            .Throw<ArgumentNullException>()
             .WithMessage("Value cannot be null. (Parameter 'options')");
     }
 
     [Fact]
     public void Option_Validation_Should_Fail()
     {
-
         IServiceCollection services = new ServiceCollection();
-        
+
         services.AddTransient<IValidator<TestOption>, TestOptionsValidation>();
-        services.AddOptions<TestOption>()
-            .Configure(o => 
+        services
+            .AddOptions<TestOption>()
+            .Configure(o =>
             {
                 o.Name = "Test";
                 o.Number = 5;
@@ -116,8 +108,12 @@ public class OptionValidation
 
         var provider = services.BuildServiceProvider();
 
-        provider.Invoking(x => x.GetRequiredService<IOptions<TestOption>>().Value)
-            .Should().Throw<OptionsValidationException>()
-            .WithMessage("Options validation failed for Number with error: 'Number' must be less than '1'.");
+        provider
+            .Invoking(x => x.GetRequiredService<IOptions<TestOption>>().Value)
+            .Should()
+            .Throw<OptionsValidationException>()
+            .WithMessage(
+                "Options validation failed for Number with error: 'Number' must be less than '1'."
+            );
     }
 }
